@@ -1,16 +1,15 @@
 from enum import Enum
-from typing import Optional
 
 TextType = Enum("TextType", ["bold", "italic", "anchor"])
 
 
 class TextNode:
-    def __init__(self, text: str, text_type: TextType, url: Optional[str] = None):
+    def __init__(self, text: str, text_type: TextType, url: str | None = None) -> None:
         self.text = text
 
         if not isinstance(text_type, TextType):
             raise TypeError(f"Invalid text_type: {text_type}")
-      
+
         self.text_type = text_type
         self.url = url
 
