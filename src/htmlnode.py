@@ -1,9 +1,15 @@
+from typing import TypeVar
+
+VOID_ELEMENTS = {"img", "br", "hr", "embed", "input", "link", "meta"}
+T = TypeVar("T", bound="HTMLNode")
+
+
 class HTMLNode:
     def __init__(
         self,
         tag: str | None = None,
         value: str | None = None,
-        children: list["HTMLNode"] | None = None,
+        children: list[T] | None = None,
         props: dict[str, str] | None = None,
     ):
         self.tag = tag
@@ -28,18 +34,41 @@ class HTMLNode:
 
 
 class LeafNode(HTMLNode):
-    def __init__(self, tag: str, value: str, props: dict[str, str] | None = None):
+    def __init__(
+        self, tag: str | None, value: str, props: dict[str, str] | None = None
+    ):
         super().__init__(tag, value, None, props)
 
-    def to_html(self):
+    def to_html(self) -> str:
         if self.value is None:
             raise ValueError("All LeafNodes must have a value")
         if self.tag is None:
             return self.value
 
-        void_elements = ["img", "br", "hr", "embed", "input", "link", "meta"]
-        if self.tag in void_elements:
+        if self.tag in VOID_ELEMENTS:
             return f"<{self.tag}{self.props_to_html()} />{self.value}"
 
         tags = [f"<{self.tag}{self.props_to_html()}>", f"</{self.tag}>"]
         return self.value.join(tags)
+
+
+class ParentNode(HTMLNode):
+    def __init__(
+        self,
+        tag: str,
+        children: list[T],
+        props: dict[str, str] | None = None,
+    ):
+        super().__init__(tag, None, children, props)
+
+    def to_html(self) -> str:
+        if self.tag is None:
+            raise ValueError("ParentNode must have a tag")
+        if not self.children:
+            raise ValueError("ParentNode must have chilidren")
+        # really should be doing these in the constructor
+
+        result = ""
+        for child in self.children:
+            result += child.to_html()
+        return result
