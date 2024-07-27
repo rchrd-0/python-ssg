@@ -65,10 +65,14 @@ class ParentNode(HTMLNode):
         if self.tag is None:
             raise ValueError("ParentNode must have a tag")
         if not self.children:
-            raise ValueError("ParentNode must have chilidren")
+            raise ValueError("ParentNode must have children")
         # really should be doing these in the constructor
 
-        result = ""
-        for child in self.children:
-            result += child.to_html()
-        return result
+        parent_tags = [
+            f"<{self.tag}{self.props_to_html()}>",
+            f"</{self.tag}>",
+        ]
+
+        children_html = "".join([child.to_html() for child in self.children])
+
+        return children_html.join(parent_tags)

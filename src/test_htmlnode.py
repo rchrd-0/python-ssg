@@ -1,7 +1,7 @@
 # type: ignore
 
 import unittest
-from htmlnode import HTMLNode, LeafNode
+from htmlnode import HTMLNode, LeafNode, ParentNode
 
 
 class TestHTMLNode(unittest.TestCase):
@@ -72,6 +72,97 @@ class TestLeafNode(unittest.TestCase):
 
         node_break = LeafNode("br", "")
         self.assertEqual(node_break.to_html(), "<br />")
+
+
+class TestParentNode(unittest.TestCase):
+    def test_empty_tag(self):
+        expected_exception = "ParentNode must have a tag"
+        with self.assertRaises(ValueError) as context:
+            parent_node = ParentNode(
+                None, [LeafNode("p", "paragraph"), LeafNode("p", "another paragraph")]
+            )
+            parent_node.to_html()
+        self.assertEqual(str(context.exception), expected_exception)
+
+    def test_empty_children(self):
+        expected_exception = "ParentNode must have children"
+
+        test_cases = [("empty_list", []), ("None", None)]
+        for case_name, params in test_cases:
+            with self.subTest(case=case_name):
+                with self.assertRaises(ValueError) as context:
+                    parent_node = ParentNode("div", params)
+                    parent_node.to_html()
+                self.assertEqual(str(context.exception), expected_exception)
+
+    def test_to_html_depth_1(self):
+        expected = (
+            "<div><p>this is a paragraph</p><p>this is another paragraph</p></div>"
+        )
+        parent_node = ParentNode(
+            "div",
+            [
+                LeafNode("p", "this is a paragraph"),
+                LeafNode("p", "this is another paragraph"),
+            ],
+        )
+
+        self.assertEqual(parent_node.to_html(), expected)
+
+    def test_to_html_depth_2(self):
+        parent_node = ParentNode(
+            "div",
+            [
+                ParentNode(
+                    "p",
+                    [
+                        LeafNode(None, "normal text"),
+                        LeafNode("span", "this is a span"),
+                        LeafNode("b", "bold text"),
+                        LeafNode("i", "italic text"),
+                    ],
+                ),
+                LeafNode("p", "this is a paragraph"),
+                LeafNode("img", "", {"class": "w-auto", "src": "./ping.png"}),
+            ],
+        )
+
+        expected = '<div><p>normal text<span>this is a span</span><b>bold text</b><i>italic text</i></p><p>this is a paragraph</p><img class="w-auto" src="./ping.png" /></div>'
+
+        self.assertEqual(parent_node.to_html(), expected)
+
+    def test_to_html_deep(self):
+        parent_node = ParentNode(
+            "main",
+            [
+                ParentNode(
+                    "div",
+                    [
+                        ParentNode(
+                            "div",
+                            [
+                                ParentNode(
+                                    "p",
+                                    [
+                                        LeafNode(None, "hello, "),
+                                        LeafNode("b", "world!"),
+                                    ],
+                                )
+                            ],
+                        )
+                    ],
+                )
+            ],
+        )
+        expected = "<main><div><div><p>hello, <b>world!</b></p></div></div></main>"
+        self.assertEqual(parent_node.to_html(), expected)
+
+    def test_to_html_with_props(self):
+        parent_node = ParentNode(
+            "div", [LeafNode("p", "text")], {"id": "main", "class": "container"}
+        )
+        expected = '<div id="main" class="container"><p>text</p></div>'
+        self.assertEqual(parent_node.to_html(), expected)
 
 
 if __name__ == "__main__":

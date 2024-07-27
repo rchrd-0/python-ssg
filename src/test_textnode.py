@@ -44,5 +44,6 @@ class TestTextNode(unittest.TestCase):
         node_0 = TextNode(self.SAMPLE_TEXT, TextType.italic, "https://rchrd.co")
         self.assertEqual(repr(node_0), expected)
 
-    if __name__ == "__main__":
-        unittest.main()
+
+if __name__ == "__main__":
+    unittest.main()
