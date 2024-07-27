@@ -36,5 +36,10 @@ class LeafNode(HTMLNode):
             raise ValueError("All LeafNodes must have a value")
         if self.tag is None:
             return self.value
+
+        void_elements = ["img", "br", "hr", "embed", "input", "link", "meta"]
+        if self.tag in void_elements:
+            return f"<{self.tag}{self.props_to_html()} />{self.value}"
+
         tags = [f"<{self.tag}{self.props_to_html()}>", f"</{self.tag}>"]
         return self.value.join(tags)

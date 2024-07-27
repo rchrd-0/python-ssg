@@ -65,6 +65,14 @@ class TestLeafNode(unittest.TestCase):
             node = LeafNode("p", None)
             node.to_html()
 
+    def test_void_tag(self):
+        node_img = LeafNode("img", "", {"class": "w-auto", "src": "./ping.png"})
+        expected_img_tag = '<img class="w-auto" src="./ping.png" />'
+        self.assertEqual(node_img.to_html(), expected_img_tag)
+
+        node_break = LeafNode("br", "")
+        self.assertEqual(node_break.to_html(), "<br />")
+
 
 if __name__ == "__main__":
     unittest.main()
