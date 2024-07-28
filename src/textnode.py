@@ -1,6 +1,7 @@
 from enum import Enum
+from htmlnode import LeafNode
 
-TextType = Enum("TextType", ["bold", "italic", "anchor"])
+TextType = Enum("TextType", ["text", "bold", "italic", "code", "link", "image"])
 
 
 class TextNode:
@@ -18,3 +19,21 @@ class TextNode:
 
     def __repr__(self):
         return f"{type(self).__name__}({self.text}, {self.text_type.name}, {self.url})"
+
+
+def text_node_to_html(text_node):
+    match text_node.text_type:
+        case TextType.text:
+            return LeafNode(None, text_node.text)
+        case TextType.bold:
+            return LeafNode("b", text_node.text)
+        case TextType.italic:
+            return LeafNode("i", text_node.text)
+        case TextType.code:
+            return LeafNode("code", text_node.text)
+        case TextType.link:
+            return LeafNode("a", text_node.text, {"href": text_node.url})
+        case TextType.image:
+            return LeafNode("img", "", {"src": text_node.url, "alt": text_node.text})
+        case _:
+            raise ValueError("Invalid text_type")
