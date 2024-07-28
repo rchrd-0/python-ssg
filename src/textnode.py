@@ -1,7 +1,14 @@
 from enum import Enum
 from htmlnode import LeafNode
 
-TextType = Enum("TextType", ["text", "bold", "italic", "code", "link", "image"])
+
+class TextType(Enum):
+    text = "text"
+    bold = "bold"
+    italic = "italic"
+    code = "code"
+    link = "link"
+    image = "image"
 
 
 class TextNode:
@@ -18,7 +25,7 @@ class TextNode:
         return self.__dict__ == other.__dict__
 
     def __repr__(self):
-        return f"{type(self).__name__}({self.text}, {self.text_type.name}, {self.url})"
+        return f"{type(self).__name__}({self.text}, {self.text_type.value}, {self.url})"
 
 
 def text_node_to_html(text_node):
