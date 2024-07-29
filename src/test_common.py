@@ -1,13 +1,13 @@
 import unittest
 
+import common
 from textnode import TextNode, TextType, text_node_to_html
-from common import split_nodes_delimiter
 
 
 class TestSplitNodes(unittest.TestCase):
     def test_bold(self):
         node = TextNode("this contains **bold** text", TextType.text)
-        split_nodes = split_nodes_delimiter([node], "**", TextType.bold)
+        split_nodes = common.split_nodes_delimiter([node], "**", TextType.bold)
         expected = [
             TextNode("this contains ", TextType.text),
             TextNode("bold", TextType.bold),
@@ -18,7 +18,7 @@ class TestSplitNodes(unittest.TestCase):
 
     def test_bold_multiple(self):
         node = TextNode("**bold 1**, **bold_2** and text", TextType.text)
-        split_nodes = split_nodes_delimiter([node], "**", TextType.bold)
+        split_nodes = common.split_nodes_delimiter([node], "**", TextType.bold)
         expected = [
             TextNode("bold 1", TextType.bold),
             TextNode(", ", TextType.text),
@@ -30,7 +30,7 @@ class TestSplitNodes(unittest.TestCase):
 
     def test_leading_trailing(self):
         node = TextNode("**leading** and **trailing**", TextType.text)
-        split_nodes = split_nodes_delimiter([node], "**", TextType.bold)
+        split_nodes = common.split_nodes_delimiter([node], "**", TextType.bold)
         expected = [
             TextNode("leading", TextType.bold),
             TextNode(" and ", TextType.text),
@@ -41,7 +41,7 @@ class TestSplitNodes(unittest.TestCase):
 
     def test_italic(self):
         node = TextNode("this contains *italic* text", TextType.text)
-        split_nodes = split_nodes_delimiter([node], "*", TextType.italic)
+        split_nodes = common.split_nodes_delimiter([node], "*", TextType.italic)
         expected = [
             TextNode("this contains ", TextType.text),
             TextNode("italic", TextType.italic),
@@ -52,7 +52,7 @@ class TestSplitNodes(unittest.TestCase):
 
     def test_code(self):
         node = TextNode("this contains a `code` block", TextType.text)
-        split_nodes = split_nodes_delimiter([node], "`", TextType.code)
+        split_nodes = common.split_nodes_delimiter([node], "`", TextType.code)
         expected = [
             TextNode("this contains a ", TextType.text),
             TextNode("code", TextType.code),
@@ -66,9 +66,9 @@ class TestSplitNodes(unittest.TestCase):
             "this is **bold** text, while this is *italic* and then we have `code`",
             TextType.text,
         )
-        bold_nodes = split_nodes_delimiter([node], "**", TextType.bold)
-        italic_nodes = split_nodes_delimiter(bold_nodes, "*", TextType.italic)
-        final_nodes = split_nodes_delimiter(italic_nodes, "`", TextType.code)
+        bold_nodes = common.split_nodes_delimiter([node], "**", TextType.bold)
+        italic_nodes = common.split_nodes_delimiter(bold_nodes, "*", TextType.italic)
+        final_nodes = common.split_nodes_delimiter(italic_nodes, "`", TextType.code)
         expected = [
             TextNode("this is ", TextType.text),
             TextNode("bold", TextType.bold),
@@ -79,6 +79,32 @@ class TestSplitNodes(unittest.TestCase):
         ]
 
         self.assertListEqual(expected, final_nodes)
+
+
+class TestExtractMarkdownLinkImage(unittest.TestCase):
+    def test_extract_markdown_links(self):
+        text = "This is text with a link [to my portfolio](https://rchrd.co) and [to my GitHub](https://github.com/rchrd-0)"
+        expected = [
+            ("to my portfolio", "https://rchrd.co"),
+            ("to my GitHub", "https://github.com/rchrd-0"),
+        ]
+
+        self.assertEqual(common.extract_markdown_links(text), expected)
+
+    def test_extract_markdown_images(self):
+        text = "here's a cute ![neovim logo](https://raw.githubusercontent.com/Aikoyori/ProgrammingVTuberLogos/main/Neovim/NeovimShadowed.png) and ![intellij](https://raw.githubusercontent.com/SAWARATSUKI/KawaiiLogos/main/IntelliJ%20IDEA/IntelliJ%20IDEA.png)"
+        expected = [
+            (
+                "neovim logo",
+                "https://raw.githubusercontent.com/Aikoyori/ProgrammingVTuberLogos/main/Neovim/NeovimShadowed.png",
+            ),
+            (
+                "intellij",
+                "https://raw.githubusercontent.com/SAWARATSUKI/KawaiiLogos/main/IntelliJ%20IDEA/IntelliJ%20IDEA.png",
+            ),
+        ]
+
+        self.assertEqual(common.extract_markdown_links(text), expected)
 
 
 if __name__ == "__main__":
