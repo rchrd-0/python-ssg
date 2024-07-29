@@ -94,6 +94,12 @@ class TestSplitNodes(unittest.TestCase):
 
         self.assertListEqual(common.split_nodes_link([node]), expected)
 
+    def test_split_nodes_link_single(self):
+        node = TextNode("[my portfolio](https://rchrd.co)", TextType.text)
+        expected = [TextNode("my portfolio", TextType.link, "https://rchrd.co")]
+
+        self.assertListEqual(common.split_nodes_link([node]), expected)
+
     def test_split_nodes_image(self):
         node = TextNode(
             "here's a cute ![neovim logo](https://raw.githubusercontent.com/Aikoyori/ProgrammingVTuberLogos/main/Neovim/NeovimShadowed.png) and ![intellij](https://raw.githubusercontent.com/SAWARATSUKI/KawaiiLogos/main/IntelliJ%20IDEA/IntelliJ%20IDEA.png)",
@@ -112,6 +118,21 @@ class TestSplitNodes(unittest.TestCase):
                 TextType.image,
                 "https://raw.githubusercontent.com/SAWARATSUKI/KawaiiLogos/main/IntelliJ%20IDEA/IntelliJ%20IDEA.png",
             ),
+        ]
+
+        self.assertListEqual(common.split_nodes_image([node]), expected)
+
+    def test_split_nodes_image_single(self):
+        node = TextNode(
+            "![neovim logo](https://raw.githubusercontent.com/Aikoyori/ProgrammingVTuberLogos/main/Neovim/NeovimShadowed.png)",
+            TextType.text,
+        )
+        expected = [
+            TextNode(
+                "neovim logo",
+                TextType.image,
+                "https://raw.githubusercontent.com/Aikoyori/ProgrammingVTuberLogos/main/Neovim/NeovimShadowed.png",
+            )
         ]
 
         self.assertListEqual(common.split_nodes_image([node]), expected)
