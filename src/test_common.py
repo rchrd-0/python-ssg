@@ -80,6 +80,42 @@ class TestSplitNodes(unittest.TestCase):
 
         self.assertListEqual(expected, final_nodes)
 
+    def test_split_nodes_link(self):
+        node = TextNode(
+            "This is text with a link [to my portfolio](https://rchrd.co) and [to my GitHub](https://github.com/rchrd-0)",
+            TextType.text,
+        )
+        expected = [
+            TextNode("This is text with a link ", TextType.text),
+            TextNode("to my portfolio", TextType.link, "https://rchrd.co"),
+            TextNode(" and ", TextType.text),
+            TextNode("to my GitHub", TextType.link, "https://github.com/rchrd-0"),
+        ]
+
+        self.assertListEqual(common.split_nodes_link([node]), expected)
+
+    def test_split_nodes_image(self):
+        node = TextNode(
+            "here's a cute ![neovim logo](https://raw.githubusercontent.com/Aikoyori/ProgrammingVTuberLogos/main/Neovim/NeovimShadowed.png) and ![intellij](https://raw.githubusercontent.com/SAWARATSUKI/KawaiiLogos/main/IntelliJ%20IDEA/IntelliJ%20IDEA.png)",
+            TextType.text,
+        )
+        expected = [
+            TextNode("here's a cute ", TextType.text),
+            TextNode(
+                "neovim logo",
+                TextType.image,
+                "https://raw.githubusercontent.com/Aikoyori/ProgrammingVTuberLogos/main/Neovim/NeovimShadowed.png",
+            ),
+            TextNode(" and ", TextType.text),
+            TextNode(
+                "intellij",
+                TextType.image,
+                "https://raw.githubusercontent.com/SAWARATSUKI/KawaiiLogos/main/IntelliJ%20IDEA/IntelliJ%20IDEA.png",
+            ),
+        ]
+
+        self.assertListEqual(common.split_nodes_image([node]), expected)
+
 
 class TestExtractMarkdownLinkImage(unittest.TestCase):
     def test_extract_markdown_links(self):
