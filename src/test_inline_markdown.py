@@ -1,13 +1,13 @@
 import unittest
 
-import common
+import inline_markdown
 from textnode import TextNode, TextType
 
 
 class TestSplitNodes(unittest.TestCase):
     def test_bold(self):
         node = TextNode("this contains **bold** text", TextType.text)
-        split_nodes = common.split_nodes_delimiter([node], "**", TextType.bold)
+        split_nodes = inline_markdown.split_nodes_delimiter([node], "**", TextType.bold)
         expected = [
             TextNode("this contains ", TextType.text),
             TextNode("bold", TextType.bold),
@@ -18,7 +18,7 @@ class TestSplitNodes(unittest.TestCase):
 
     def test_bold_multiple(self):
         node = TextNode("**bold 1**, **bold_2** and text", TextType.text)
-        split_nodes = common.split_nodes_delimiter([node], "**", TextType.bold)
+        split_nodes = inline_markdown.split_nodes_delimiter([node], "**", TextType.bold)
         expected = [
             TextNode("bold 1", TextType.bold),
             TextNode(", ", TextType.text),
@@ -30,7 +30,7 @@ class TestSplitNodes(unittest.TestCase):
 
     def test_leading_trailing(self):
         node = TextNode("**leading** and **trailing**", TextType.text)
-        split_nodes = common.split_nodes_delimiter([node], "**", TextType.bold)
+        split_nodes = inline_markdown.split_nodes_delimiter([node], "**", TextType.bold)
         expected = [
             TextNode("leading", TextType.bold),
             TextNode(" and ", TextType.text),
@@ -41,7 +41,9 @@ class TestSplitNodes(unittest.TestCase):
 
     def test_italic(self):
         node = TextNode("this contains *italic* text", TextType.text)
-        split_nodes = common.split_nodes_delimiter([node], "*", TextType.italic)
+        split_nodes = inline_markdown.split_nodes_delimiter(
+            [node], "*", TextType.italic
+        )
         expected = [
             TextNode("this contains ", TextType.text),
             TextNode("italic", TextType.italic),
@@ -52,7 +54,7 @@ class TestSplitNodes(unittest.TestCase):
 
     def test_code(self):
         node = TextNode("this contains a `code` block", TextType.text)
-        split_nodes = common.split_nodes_delimiter([node], "`", TextType.code)
+        split_nodes = inline_markdown.split_nodes_delimiter([node], "`", TextType.code)
         expected = [
             TextNode("this contains a ", TextType.text),
             TextNode("code", TextType.code),
@@ -66,9 +68,13 @@ class TestSplitNodes(unittest.TestCase):
             "this is **bold** text, while this is *italic* and then we have `code`",
             TextType.text,
         )
-        bold_nodes = common.split_nodes_delimiter([node], "**", TextType.bold)
-        italic_nodes = common.split_nodes_delimiter(bold_nodes, "*", TextType.italic)
-        final_nodes = common.split_nodes_delimiter(italic_nodes, "`", TextType.code)
+        bold_nodes = inline_markdown.split_nodes_delimiter([node], "**", TextType.bold)
+        italic_nodes = inline_markdown.split_nodes_delimiter(
+            bold_nodes, "*", TextType.italic
+        )
+        final_nodes = inline_markdown.split_nodes_delimiter(
+            italic_nodes, "`", TextType.code
+        )
         expected = [
             TextNode("this is ", TextType.text),
             TextNode("bold", TextType.bold),
@@ -92,15 +98,15 @@ class TestSplitNodes(unittest.TestCase):
             TextNode("to my GitHub", TextType.link, "https://github.com/rchrd-0"),
         ]
 
-        # self.assertListEqual(common.split_nodes_link([node]), expected)
-        self.assertListEqual(common.split_nodes_image_links([node]), expected)
+        # self.assertListEqual(inline_markdown.split_nodes_link([node]), expected)
+        self.assertListEqual(inline_markdown.split_nodes_image_links([node]), expected)
 
     def test_split_nodes_link_single(self):
         node = TextNode("[my portfolio](https://rchrd.co)", TextType.text)
         expected = [TextNode("my portfolio", TextType.link, "https://rchrd.co")]
 
-        # self.assertListEqual(common.split_nodes_link([node]), expected)
-        self.assertListEqual(common.split_nodes_image_links([node]), expected)
+        # self.assertListEqual(inline_markdown.split_nodes_link([node]), expected)
+        self.assertListEqual(inline_markdown.split_nodes_image_links([node]), expected)
 
     def test_split_nodes_image(self):
         node = TextNode(
@@ -122,8 +128,8 @@ class TestSplitNodes(unittest.TestCase):
             ),
         ]
 
-        # self.assertListEqual(common.split_nodes_image([node]), expected)
-        self.assertListEqual(common.split_nodes_image_links([node]), expected)
+        # self.assertListEqual(inline_markdown.split_nodes_image([node]), expected)
+        self.assertListEqual(inline_markdown.split_nodes_image_links([node]), expected)
 
     def test_split_nodes_image_single(self):
         node = TextNode(
@@ -138,8 +144,8 @@ class TestSplitNodes(unittest.TestCase):
             )
         ]
 
-        # self.assertListEqual(common.split_nodes_image([node]), expected)
-        self.assertListEqual(common.split_nodes_image_links([node]), expected)
+        # self.assertListEqual(inline_markdown.split_nodes_image([node]), expected)
+        self.assertListEqual(inline_markdown.split_nodes_image_links([node]), expected)
 
     def test_split_nodes_image_and_link(self):
         node = TextNode(
@@ -156,7 +162,7 @@ class TestSplitNodes(unittest.TestCase):
             TextNode("portfolio", TextType.link, "https://rchrd.co"),
         ]
 
-        self.assertListEqual(common.split_nodes_image_links([node]), expected)
+        self.assertListEqual(inline_markdown.split_nodes_image_links([node]), expected)
 
     def test_split_nodes_link_first_then_image(self):
         node = TextNode(
@@ -174,7 +180,7 @@ class TestSplitNodes(unittest.TestCase):
             ),
         ]
 
-        self.assertListEqual(common.split_nodes_image_links([node]), expected)
+        self.assertListEqual(inline_markdown.split_nodes_image_links([node]), expected)
 
 
 class TestExtractMarkdownLinkImage(unittest.TestCase):
@@ -185,7 +191,7 @@ class TestExtractMarkdownLinkImage(unittest.TestCase):
             ("to my GitHub", "https://github.com/rchrd-0"),
         ]
 
-        self.assertEqual(common.extract_markdown_links(text), expected)
+        self.assertEqual(inline_markdown.extract_markdown_links(text), expected)
 
     def test_extract_markdown_images(self):
         text = "here's a cute ![neovim logo](https://raw.githubusercontent.com/Aikoyori/ProgrammingVTuberLogos/main/Neovim/NeovimShadowed.png) and ![intellij](https://raw.githubusercontent.com/SAWARATSUKI/KawaiiLogos/main/IntelliJ%20IDEA/IntelliJ%20IDEA.png)"
@@ -200,7 +206,7 @@ class TestExtractMarkdownLinkImage(unittest.TestCase):
             ),
         ]
 
-        self.assertEqual(common.extract_markdown_links(text), expected)
+        self.assertEqual(inline_markdown.extract_markdown_links(text), expected)
 
 
 class TestTextToTextNodes(unittest.TestCase):
@@ -221,70 +227,7 @@ class TestTextToTextNodes(unittest.TestCase):
             TextNode("link", TextType.link, "https://boot.dev"),
         ]
 
-        self.assertListEqual(common.text_to_textnodes(text), expected)
-
-
-class TestBlockMarkdown(unittest.TestCase):
-    def test_markdown_to_blocks(self):
-        text = """# This is a heading
-
-This is a paragraph of text. It has some **bold** and *italic* words inside of it.
-
-* This is the first list item in a list block
-* This is a list item
-* This is another list item"""
-
-        expected = [
-            "# This is a heading",
-            "This is a paragraph of text. It has some **bold** and *italic* words inside of it.",
-            "* This is the first list item in a list block\n* This is a list item\n* This is another list item",
-        ]
-
-        self.assertListEqual(common.markdown_to_blocks(text), expected)
-
-    def test_markdown_to_blocks_multiple_empty(self):
-        text = """
-
-# This is a heading
-
-
-This is a paragraph of text. It has some **bold** and *italic* words inside of it.
-
-
-* This is the first list item in a list block
-* This is a list item
-* This is another list item
-
-
-
-"""
-
-        expected = [
-            "# This is a heading",
-            "This is a paragraph of text. It has some **bold** and *italic* words inside of it.",
-            "* This is the first list item in a list block\n* This is a list item\n* This is another list item",
-        ]
-
-        self.assertListEqual(common.markdown_to_blocks(text), expected)
-
-    def test_markdown_to_blocks_trailing_leading(self):
-        text = """
-# This is a heading
-
-This is a paragraph of text. It has some **bold** and *italic* words inside of it.
-
-* This is the first list item in a list block
-* This is a list item
-* This is another list item
-"""
-
-        expected = [
-            "# This is a heading",
-            "This is a paragraph of text. It has some **bold** and *italic* words inside of it.",
-            "* This is the first list item in a list block\n* This is a list item\n* This is another list item",
-        ]
-
-        self.assertListEqual(common.markdown_to_blocks(text), expected)
+        self.assertListEqual(inline_markdown.text_to_textnodes(text), expected)
 
 
 if __name__ == "__main__":
