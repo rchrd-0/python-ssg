@@ -1,8 +1,11 @@
 import re
+from functools import reduce
+from typing import Callable
 
 from textnode import TextNode, TextType
 
 
+# parse bold, italic and code text based on markdown delimiters
 def split_nodes_delimiter(
     old_nodes: list[TextNode], delimiter: str, text_type: TextType
 ) -> list[TextNode]:
@@ -29,6 +32,24 @@ def split_nodes_delimiter(
             result_nodes.append(node)
 
     return result_nodes
+
+
+def create_delimiter_splitter(delimiter: str, text_type: TextType) -> Callable:
+    def splitter(nodes: list[TextNode]) -> list[TextNode]:
+        return split_nodes_delimiter(nodes, delimiter, text_type)
+
+    return splitter
+
+
+split_bold = create_delimiter_splitter("**", TextType.bold)
+split_italic = create_delimiter_splitter("*", TextType.italic)
+split_code = create_delimiter_splitter("`", TextType.code)
+
+
+def apply_delimiter_splitters(
+    nodes: list[TextNode], splitters: list[Callable]
+) -> list[TextNode]:
+    return reduce(lambda acc, splitter: splitter(acc), splitters, nodes)
 
 
 def extract_markdown_images(text: str) -> list[tuple[str, str]]:
@@ -73,6 +94,17 @@ def split_nodes_link(old_nodes: list[TextNode]) -> list[TextNode]:
 
         splits = re.split(r"(\[.*?\]\(.*?\))", node.text)
 
+        # for content in splits:
+        #     if content == "":
+        #         continue
+        #     links = extract_markdown_links(content)
+        #     if not links:
+        #         result_nodes.append(TextNode(content, TextType.text))
+        #     else:
+        #         result_nodes.extend(
+        #             TextNode(text, TextType.link, url) for text, url in links
+        #         )
+
         for content in splits:
             if content == "":
                 continue
@@ -85,3 +117,18 @@ def split_nodes_link(old_nodes: list[TextNode]) -> list[TextNode]:
                 )
 
     return result_nodes
+
+
+def text_to_textnodes(text: str) -> list["TextNode"]:
+    base_node = TextNode(text, TextType.text)
+    splitters = [
+        split_bold,
+        split_italic,
+        split_code,
+        split_nodes_link,
+        split_nodes_image,
+    ]
+    split_nodes = apply_delimiter_splitters([base_node], splitters)
+    return split_nodes
+
+    # return [TextNode("foo", TextType.text)]
