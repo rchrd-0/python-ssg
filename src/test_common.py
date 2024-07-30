@@ -1,7 +1,7 @@
 import unittest
 
 import common
-from textnode import TextNode, TextType, text_node_to_html
+from textnode import TextNode, TextType
 
 
 class TestSplitNodes(unittest.TestCase):
@@ -92,13 +92,15 @@ class TestSplitNodes(unittest.TestCase):
             TextNode("to my GitHub", TextType.link, "https://github.com/rchrd-0"),
         ]
 
-        self.assertListEqual(common.split_nodes_link([node]), expected)
+        # self.assertListEqual(common.split_nodes_link([node]), expected)
+        self.assertListEqual(common.split_nodes_image_links([node]), expected)
 
     def test_split_nodes_link_single(self):
         node = TextNode("[my portfolio](https://rchrd.co)", TextType.text)
         expected = [TextNode("my portfolio", TextType.link, "https://rchrd.co")]
 
-        self.assertListEqual(common.split_nodes_link([node]), expected)
+        # self.assertListEqual(common.split_nodes_link([node]), expected)
+        self.assertListEqual(common.split_nodes_image_links([node]), expected)
 
     def test_split_nodes_image(self):
         node = TextNode(
@@ -120,7 +122,8 @@ class TestSplitNodes(unittest.TestCase):
             ),
         ]
 
-        self.assertListEqual(common.split_nodes_image([node]), expected)
+        # self.assertListEqual(common.split_nodes_image([node]), expected)
+        self.assertListEqual(common.split_nodes_image_links([node]), expected)
 
     def test_split_nodes_image_single(self):
         node = TextNode(
@@ -135,7 +138,43 @@ class TestSplitNodes(unittest.TestCase):
             )
         ]
 
-        self.assertListEqual(common.split_nodes_image([node]), expected)
+        # self.assertListEqual(common.split_nodes_image([node]), expected)
+        self.assertListEqual(common.split_nodes_image_links([node]), expected)
+
+    def test_split_nodes_image_and_link(self):
+        node = TextNode(
+            "![neovim logo](https://raw.githubusercontent.com/Aikoyori/ProgrammingVTuberLogos/main/Neovim/NeovimShadowed.png) and my [portfolio](https://rchrd.co)",
+            TextType.text,
+        )
+        expected = [
+            TextNode(
+                "neovim logo",
+                TextType.image,
+                "https://raw.githubusercontent.com/Aikoyori/ProgrammingVTuberLogos/main/Neovim/NeovimShadowed.png",
+            ),
+            TextNode(" and my ", TextType.text),
+            TextNode("portfolio", TextType.link, "https://rchrd.co"),
+        ]
+
+        self.assertListEqual(common.split_nodes_image_links([node]), expected)
+
+    def test_split_nodes_link_first_then_image(self):
+        node = TextNode(
+            "have a look at my [portfolio](https://rchrd.co) and this cute ![neovim logo](https://raw.githubusercontent.com/Aikoyori/ProgrammingVTuberLogos/main/Neovim/NeovimShadowed.png)",
+            TextType.text,
+        )
+        expected = [
+            TextNode("have a look at my ", TextType.text),
+            TextNode("portfolio", TextType.link, "https://rchrd.co"),
+            TextNode(" and this cute ", TextType.text),
+            TextNode(
+                "neovim logo",
+                TextType.image,
+                "https://raw.githubusercontent.com/Aikoyori/ProgrammingVTuberLogos/main/Neovim/NeovimShadowed.png",
+            ),
+        ]
+
+        self.assertListEqual(common.split_nodes_image_links([node]), expected)
 
 
 class TestExtractMarkdownLinkImage(unittest.TestCase):
@@ -162,6 +201,27 @@ class TestExtractMarkdownLinkImage(unittest.TestCase):
         ]
 
         self.assertEqual(common.extract_markdown_links(text), expected)
+
+
+class TestTextToTextNodes(unittest.TestCase):
+    def test_text_to_textnodes(self):
+        text = "This is **text** with an *italic* word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        expected = [
+            TextNode("This is ", TextType.text),
+            TextNode("text", TextType.bold),
+            TextNode(" with an ", TextType.text),
+            TextNode("italic", TextType.italic),
+            TextNode(" word and a ", TextType.text),
+            TextNode("code block", TextType.code),
+            TextNode(" and an ", TextType.text),
+            TextNode(
+                "obi wan image", TextType.image, "https://i.imgur.com/fJRm4Vk.jpeg"
+            ),
+            TextNode(" and a ", TextType.text),
+            TextNode("link", TextType.link, "https://boot.dev"),
+        ]
+
+        self.assertListEqual(common.text_to_textnodes(text), expected)
 
 
 if __name__ == "__main__":

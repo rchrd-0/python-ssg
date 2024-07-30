@@ -60,7 +60,66 @@ def extract_markdown_links(text: str) -> list[tuple[str, str]]:
     return re.findall(r"\[(.*?)\]\((.*?)\)", text)
 
 
-def split_nodes_image(old_nodes: list[TextNode]) -> list[TextNode]:
+# def split_nodes_image(old_nodes: list[TextNode]) -> list[TextNode]:
+#     result_nodes = []
+#
+#     for node in old_nodes:
+#         if node.text_type != TextType.text:
+#             result_nodes.append(node)
+#             continue
+#
+#         splits = re.split(r"(!\[.*?\]\(.*?\))", node.text)
+#
+#         for content in splits:
+#             if content == "":
+#                 continue
+#             images = extract_markdown_images(content)
+#             if not images:
+#                 result_nodes.append(TextNode(content, TextType.text))
+#             else:
+#                 result_nodes.extend(
+#                     TextNode(text, TextType.image, url) for text, url in images
+#                 )
+#
+#     return result_nodes
+
+
+# def split_nodes_link(old_nodes: list[TextNode]) -> list[TextNode]:
+#     result_nodes = []
+#
+#     for node in old_nodes:
+#         if node.text_type != TextType.text:
+#             result_nodes.append(node)
+#             continue
+#
+#         splits = re.split(r"(\[.*?\]\(.*?\))", node.text)
+#
+#         # for content in splits:
+#         #     if content == "":
+#         #         continue
+#         #     links = extract_markdown_links(content)
+#         #     if not links:
+#         #         result_nodes.append(TextNode(content, TextType.text))
+#         #     else:
+#         #         result_nodes.extend(
+#         #             TextNode(text, TextType.link, url) for text, url in links
+#         #         )
+#
+#         for content in splits:
+#             if content == "":
+#                 continue
+#             links = extract_markdown_links(content)
+#             if not links:
+#                 result_nodes.append(TextNode(content, TextType.text))
+#             else:
+#                 result_nodes.extend(
+#                     TextNode(text, TextType.link, url) for text, url in links
+#                 )
+#
+#     return result_nodes
+
+
+def split_nodes_image_links(old_nodes: list[TextNode]) -> list[TextNode]:
     result_nodes = []
 
     for node in old_nodes:
@@ -68,53 +127,23 @@ def split_nodes_image(old_nodes: list[TextNode]) -> list[TextNode]:
             result_nodes.append(node)
             continue
 
-        splits = re.split(r"(!\[.*?\]\(.*?\))", node.text)
+        splits = re.split(r"(!?\[.*?\]\(.*?\))", node.text)
 
         for content in splits:
             if content == "":
                 continue
-            images = extract_markdown_images(content)
-            if not images:
-                result_nodes.append(TextNode(content, TextType.text))
-            else:
+            if content.startswith("!"):
+                images = extract_markdown_images(content)
                 result_nodes.extend(
                     TextNode(text, TextType.image, url) for text, url in images
                 )
-
-    return result_nodes
-
-
-def split_nodes_link(old_nodes: list[TextNode]) -> list[TextNode]:
-    result_nodes = []
-
-    for node in old_nodes:
-        if node.text_type != TextType.text:
-            result_nodes.append(node)
-            continue
-
-        splits = re.split(r"(\[.*?\]\(.*?\))", node.text)
-
-        # for content in splits:
-        #     if content == "":
-        #         continue
-        #     links = extract_markdown_links(content)
-        #     if not links:
-        #         result_nodes.append(TextNode(content, TextType.text))
-        #     else:
-        #         result_nodes.extend(
-        #             TextNode(text, TextType.link, url) for text, url in links
-        #         )
-
-        for content in splits:
-            if content == "":
-                continue
-            links = extract_markdown_links(content)
-            if not links:
-                result_nodes.append(TextNode(content, TextType.text))
-            else:
+            elif content.startswith("["):
+                links = extract_markdown_links(content)
                 result_nodes.extend(
                     TextNode(text, TextType.link, url) for text, url in links
                 )
+            else:
+                result_nodes.append(TextNode(content, TextType.text))
 
     return result_nodes
 
@@ -125,10 +154,9 @@ def text_to_textnodes(text: str) -> list["TextNode"]:
         split_bold,
         split_italic,
         split_code,
-        split_nodes_link,
-        split_nodes_image,
+        split_nodes_image_links,
+        # split_nodes_image,
+        # split_nodes_link,
     ]
     split_nodes = apply_delimiter_splitters([base_node], splitters)
     return split_nodes
-
-    # return [TextNode("foo", TextType.text)]

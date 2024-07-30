@@ -1,4 +1,5 @@
 from enum import Enum
+
 from htmlnode import LeafNode
 
 
@@ -28,7 +29,7 @@ class TextNode:
         return f"{type(self).__name__}({self.text}, {self.text_type.value}, {self.url})"
 
 
-def text_node_to_html(text_node):
+def text_node_to_html(text_node: TextNode) -> LeafNode:
     match text_node.text_type:
         case TextType.text:
             return LeafNode(None, text_node.text)
