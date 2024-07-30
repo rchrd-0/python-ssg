@@ -160,3 +160,14 @@ def text_to_textnodes(text: str) -> list["TextNode"]:
     ]
     split_nodes = apply_delimiter_splitters([base_node], splitters)
     return split_nodes
+
+
+# blocks
+def markdown_to_blocks(markdown: str) -> list[str]:
+    md_split = markdown.split("\n\n")
+    result = [split for split in md_split if split != ""]
+    # for split in md_split:
+    #     if split != "":
+    #         result.append(split.strip())
+
+    return result
